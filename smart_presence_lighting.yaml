@@ -1,0 +1,175 @@
+blueprint:
+  name: Presence-Based Lighting (with delays and brightness control)
+  description: >
+    Automates lighting based on presence detection and household mode.
+    Lights turn on with different brightness depending on whether the household is in "home" or "sleep" mode,
+    and turn off after a configurable delay based on how long presence was detected.
+
+    Requirements:
+    - An input_select helper for household mode with two options: "home" and "sleep"
+    - An input_datetime helper of type "Date and time" to store the timestamp when the light was turned on
+
+    All delay durations are configurable via blueprint inputs.
+  domain: automation
+  input:
+    presence_sensor:
+      name: Presence Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: occupancy
+    house_state:
+      name: Household Mode (input_select)
+      selector:
+        entity:
+          domain: input_select
+    light_target:
+      name: Light Target
+      selector:
+        target:
+          entity:
+            domain: light
+    datetime_helper:
+      name: Input Datetime (Date and time helper)
+      selector:
+        entity:
+          domain: input_datetime
+    brightness_home:
+      name: Brightness in "home" mode (%)
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+    brightness_sleep:
+      name: Brightness in "sleep" mode (%)
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+    delay_short:
+      name: Delay for short presence (<1 min)
+      default: "00:00:00"
+      selector:
+        time:
+    delay_medium:
+      name: Delay for medium presence (<5 min)
+      default: "00:00:30"
+      selector:
+        time:
+    delay_long:
+      name: Delay for long presence (<10 min)
+      default: "00:01:00"
+      selector:
+        time:
+    delay_max:
+      name: Delay for extended presence (>10 min)
+      default: "00:01:00"
+      selector:
+        time:
+    delay_sleep:
+      name: Delay when in sleep mode
+      default: "00:00:10"
+      selector:
+        time:
+
+trigger:
+  - platform: state
+    entity_id: !input presence_sensor
+    to: "on"
+    id: presence_detected
+  - platform: state
+    entity_id: !input presence_sensor
+    to: "off"
+    id: presence_cleared
+
+mode: restart
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: presence_detected
+          - condition: state
+            entity_id: !input house_state
+            state: "home"
+        sequence:
+          - alias: Turn on with configured brightness in "home" mode
+            action: light.turn_on
+            target: !input light_target
+            data:
+              brightness_pct: !input brightness_home
+              transition: 2
+          - alias: Save timestamp
+            action: input_datetime.set_datetime
+            target:
+              entity_id: !input datetime_helper
+            data:
+              datetime: "{{ now().isoformat() }}"
+      - conditions:
+          - condition: trigger
+            id: presence_detected
+          - condition: state
+            entity_id: !input house_state
+            state: "sleep"
+        sequence:
+          - alias: Turn on with configured brightness in "sleep" mode
+            action: light.turn_on
+            target: !input light_target
+            data:
+              brightness_pct: !input brightness_sleep
+              transition: 2
+      - conditions:
+          - condition: trigger
+            id: presence_cleared
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input house_state
+                    state: home
+                sequence:
+                  - alias: Calculate duration
+                    variables:
+                      start: "{{ state_attr(datetime_helper, 'timestamp') or as_timestamp(now()) }}"
+                      now: "{{ as_timestamp(now()) }}"
+                      duration: "{{ now - start }}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ duration < 60 }}"
+                        sequence:
+                          - delay: !input delay_short
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ duration < 300 }}"
+                        sequence:
+                          - delay: !input delay_medium
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ duration < 600 }}"
+                        sequence:
+                          - delay: !input delay_long
+                    default:
+                      - delay: !input delay_max
+                  - alias: Turn off after delay
+                    action: light.turn_off
+                    target: !input light_target
+                    data:
+                      transition: 2
+              - conditions:
+                  - condition: state
+                    entity_id: !input house_state
+                    state: sleep
+                sequence:
+                  - delay: !input delay_sleep
+                  - alias: Turn off in sleep mode
+                    action: light.turn_off
+                    target: !input light_target
+                    data:
+                      transition: 2
