@@ -28,4 +28,4 @@ When creating an automation from this blueprint, you’ll be asked to:
 
 ## 🔗 Import Blueprint
 
-For help on how to import an blueprint please look at the official Home Assistant guide here: https://www.home-assistant.io/docs/automation/using_blueprints/#importing-blueprints
+For help on how to import a blueprint please look at the official Home Assistant guide here: https://www.home-assistant.io/docs/automation/using_blueprints/#importing-blueprints
