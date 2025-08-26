@@ -10,7 +10,11 @@ blueprint:
     - An input_datetime helper of type "Date and time" to store the timestamp when the light was turned on
 
     All delay durations are configurable via blueprint inputs.
+  author: MittSmartaHem.nu
   domain: automation
+  homeassistant:
+    min_version: 2024.6.0
+
   input:
     presence_sensor:
       name: Presence Sensor
@@ -136,9 +140,11 @@ action:
                 sequence:
                   - alias: Calculate duration
                     variables:
-                      start: "{{ state_attr(datetime_helper, 'timestamp') or as_timestamp(now()) }}"
+                      datetime_entity: !input datetime_helper
+                      start: "{{ state_attr(datetime_entity, 'timestamp') or as_timestamp(now()) }}"
                       now: "{{ as_timestamp(now()) }}"
                       duration: "{{ now - start }}"
+
                   - choose:
                       - conditions:
                           - condition: template
