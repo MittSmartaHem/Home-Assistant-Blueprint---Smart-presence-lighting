@@ -29,4 +29,3 @@ When creating an automation from this blueprint, you’ll be asked to:
 ## 🔗 Import Blueprint
 
 You can import this blueprint directly into Home Assistant using the link below:
-[[![Lägg till i min Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?url=https://github.com/MittSmartaHem/Home-Assistant-Blueprint---Smart-presence-lighting/raw/main/smart_presence_lighting.yaml)](https://github.com/MittSmartaHem/Home-Assistant-Blueprint---Smart-presence-lighting/raw/main/smart_presence_lighting.yaml)
