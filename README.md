@@ -7,6 +7,7 @@ This Home Assistant blueprint automates lighting based on presence detection and
 - Adjustable brightness for different household modes (`home`, `sleep`)
 - Delayed shutoff depending on how long the room has been empty
 - Easy configuration via Home Assistant UI
+<img width="940" height="1166" alt="image" src="https://github.com/user-attachments/assets/84a9415c-c18f-4511-a1c3-4746902c88e8" />
 
 ## 🧰 Requirements
 
