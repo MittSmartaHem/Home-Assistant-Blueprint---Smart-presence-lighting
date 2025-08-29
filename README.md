@@ -1,4 +1,4 @@
-# 💡 Presence-Based Lighting Blueprint
+# 💡 Presence-Based Lighting Blueprint with delay
 
 This Home Assistant blueprint automates lighting based on presence detection and household mode. It’s designed to create smart, mood-aware lighting that adapts to whether someone is home, asleep, or away.
 
